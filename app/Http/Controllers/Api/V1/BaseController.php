@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Nette\Utils\Json;
 
 class BaseController extends Controller
 {
@@ -12,7 +14,7 @@ class BaseController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    public function sendResponse($result, $message)
+    public function sendResponse($result, $message) : JsonResponse
     {
         $response = [
             'success' => true,
@@ -28,7 +30,7 @@ class BaseController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    public function sendError($error, $errorMessages = [], $code = 404)
+    public function sendError($error, $errorMessages = [], $code = 404) : JsonResponse
     {
         $response = [
             'success' => false,
