@@ -20,8 +20,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+/**
+ * Access the api with {url}/api/v1/{route}
+ */
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1'], function () {
-    Route::get('hello', fn() => response()->json('Hello World'));
+    // Route::get('hello', fn() => response()->json('Hello World'));
     Route::post('register', [UserController::class, 'register']);
     Route::post('login', [UserController::class, 'login']);
 });
