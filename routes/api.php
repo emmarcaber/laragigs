@@ -33,5 +33,6 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1'], f
         // Route::get('user', [UserController::class, 'user']);
         // Route::post('logout', [UserController::class, 'logout']);
         Route::get('/listings', [ListingController::class, 'index']);
+        Route::get('/listings/{listing}', [ListingController::class, 'show']);
     });
 });
