@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\User;
@@ -27,4 +28,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1'], f
     // Route::get('hello', fn() => response()->json('Hello World'));
     Route::post('register', [UserController::class, 'register']);
     Route::post('login', [UserController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        // Route::get('user', [UserController::class, 'user']);
+        // Route::post('logout', [UserController::class, 'logout']);
+        Route::get('/listings', [ListingController::class, 'index']);
+    });
 });
