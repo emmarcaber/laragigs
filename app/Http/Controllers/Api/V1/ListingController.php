@@ -22,9 +22,10 @@ class ListingController extends BaseController
     {
         $listings = Listing::all();
         return $this
-            ->sendResponse(new ListingCollection($listings), 
-            'Listings retrieved successfully.'
-        );
+            ->sendResponse(
+                new ListingCollection($listings),
+                'Listings retrieved successfully.'
+            );
     }
 
     /**
@@ -35,13 +36,23 @@ class ListingController extends BaseController
     public function show(Listing $listing)
     {
         $listing = Listing::find($listing->id);
-        
-        if (is_null($listing))
-        {
+
+        if (is_null($listing)) {
             return $this->sendError('Listing not found.');
         }
 
         return $this->sendResponse(new ListingResource($listing), 'Listing retrieved successfully.');
+    }
+
+    public function getUserIdByToken($token)
+    {
+        $personalAccessToken = PersonalAccessToken::findToken($token);
+
+        if (!$personalAccessToken) {
+            return $this->sendError('Token not found.', ['error' => 'Unauthorized'], 401);
+        }
+
+        return $personalAccessToken->tokenable->id;
     }
 
     /**
@@ -51,15 +62,8 @@ class ListingController extends BaseController
      */
     public function store(Request $request)
     {
-        $token = $request->bearerToken();
-        $personalAccessToken = PersonalAccessToken::findToken($token);
+        $userId = $this->getUserIdByToken($request->bearerToken());
 
-        if (!$personalAccessToken) {
-            return $this->sendError('Unauthorized. Token not found.', ['error' => 'Unauthorized'], 401);
-        }
-
-        $userId = $personalAccessToken->tokenable->id;
-        
         $formFields = Validator::make($request->all(), [
             'title' => 'required',
             'tags' => 'required',
@@ -88,5 +92,44 @@ class ListingController extends BaseController
         return $this->sendResponse([
             'listing' => new ListingResource($createdListing),
         ], 'Listing created successfully.');
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $userId = $this->getUserIdByToken($request->bearerToken());
+
+        $listing = Listing::find($id);
+
+        if (is_null($listing)) {
+            return $this->sendError('Listing not found.', ['error' => 'Listing not found.'], 404);
+        }
+        
+        $formFields = Validator::make($request->all(), [
+            'title' => 'required',
+            'tags' => 'required',
+            'company' => ['required'],
+            'location' => 'required',
+            'email' => ['required', 'email'],
+            'website' => 'required',
+            'description' => 'required',
+            'logo' => 'file:jpeg,png,jpg,gif,svg|max:3072',
+        ]);
+
+        if ($formFields->fails()) {
+            return $this->sendError('Validation Error.', $formFields->errors());
+        }
+
+        $validatedListingDataToUpdate = $formFields->validated();
+
+        
+        if ($request->hasFile('logo')) {
+            $validatedListingDataToUpdate['logo'] = $request->file('logo')->store('logos', 'public');
+        }
+        
+        $listing->update($validatedListingDataToUpdate);
+        
+        return $this->sendResponse([
+            'listing' => new ListingResource($listing),
+        ], 'Listing updated successfully.');
     }
 }
