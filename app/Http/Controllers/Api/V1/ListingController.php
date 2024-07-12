@@ -132,4 +132,22 @@ class ListingController extends BaseController
             'listing' => new ListingResource($listing),
         ], 'Listing updated successfully.');
     }
+
+    public function destroy(Request $request, string $id) {
+        $userId = $this->getUserIdByToken($request->bearerToken());
+
+        $listing = Listing::find($id);
+
+        if (is_null($listing)) {
+            return $this->sendError('Listing not found.', ['error' => 'Listing not found.'], 404);
+        }
+
+        if ($listing->user_id != $userId) {
+            return $this->sendError('Unauthorized Action.', ['error' => 'Unauthorized Action.'], 403);
+        }
+
+        $listing->delete();
+
+        return $this->sendResponse([], 'Listing deleted successfully.');
+    }
 }
